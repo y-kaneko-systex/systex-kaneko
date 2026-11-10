@@ -219,7 +219,7 @@ public class StockCountService extends StockControlSupport {
     private StockBalance lockedBalance(Long id) {
         StockBalance balance = dao.lock(StockBalance.class, id);
         // Eager count lines may already have loaded an older balance before the lock wait.
-        dao.session().refresh(balance, LockMode.UPGRADE);
+        dao.session().refresh(balance, LockMode.PESSIMISTIC_WRITE);
         return balance;
     }
 

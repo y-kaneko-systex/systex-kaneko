@@ -44,7 +44,7 @@ public class WholesaleDao {
         if (id == null) {
             throw new BusinessException("validation.id", "伝票またはマスタを指定してください。");
         }
-        Object found = session().get(type, id, LockMode.UPGRADE);
+        Object found = session().get(type, id, LockMode.PESSIMISTIC_WRITE);
         if (found == null) {
             throw new BusinessException("notFound", "対象データが見つかりません。");
         }
@@ -64,7 +64,7 @@ public class WholesaleDao {
     }
 
     public void lockKey(String namespace, String key) {
-        session().createSQLQuery("select 1 as locked from pg_advisory_xact_lock(hashtext(:key))")
+        session().createNativeQuery("select 1 as locked from pg_advisory_xact_lock(hashtext(:key))")
                 .addScalar("locked", org.hibernate.Hibernate.INTEGER)
                 .setString("key", namespace + ":" + key).uniqueResult();
     }

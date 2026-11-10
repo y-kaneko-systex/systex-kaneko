@@ -263,7 +263,7 @@ public class OrderService extends BaseService {
         dao.flush();
         // A zero-priced quantity change can leave every header property unchanged.
         if (order.getVersion() == amendment.getBaseOrderVersion()) {
-            dao.session().lock(order, org.hibernate.LockMode.FORCE);
+            dao.session().lock(order, org.hibernate.LockMode.PESSIMISTIC_FORCE_INCREMENT);
         }
         amendment.setStatus("APPLIED");
         amendment.setDecidedById(actorId);

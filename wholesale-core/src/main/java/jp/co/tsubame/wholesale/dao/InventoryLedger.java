@@ -18,14 +18,14 @@ public class InventoryLedger {
     public StockBalance lock(Long warehouseId, Long productId) {
         Checks.state(warehouseId != null && productId != null, "inventory.key", "倉庫と商品を指定してください。");
         // PostgreSQL arbitrates creation of the first balance before the row lock is taken.
-        dao.session().createSQLQuery("insert into stock_balance "
+        dao.session().createNativeQuery("insert into stock_balance "
                 + "(id,version,warehouse_id,product_id,on_hand,reserved,blocked) "
                 + "values(nextval('wholesale_seq'),0,:warehouse,:product,0,0,false) "
                 + "on conflict (warehouse_id,product_id) do nothing")
                 .setLong("warehouse", warehouseId).setLong("product", productId).executeUpdate();
         Object result = dao.query("from StockBalance b where b.warehouse.id=:warehouse and b.product.id=:product",
                 WholesaleDao.params("warehouse", warehouseId, "product", productId))
-                .setLockMode("b", LockMode.UPGRADE).uniqueResult();
+                .setLockMode("b", LockMode.PESSIMISTIC_WRITE).uniqueResult();
         Checks.state(result != null, "inventory.balance", "在庫残高の作成に失敗しました。");
         return StockBalance.class.cast(result);
     }
